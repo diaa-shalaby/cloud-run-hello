@@ -9,11 +9,11 @@ terraform {
 }
 
 # Configure variables for project ID and region
-variable "PROJECT_ID" {
+variable "project_id" {
   type = string
 }
 
-variable "REGION" {
+variable "region" {
   type = string
   default = "us-central1"
 }
@@ -32,7 +32,7 @@ resource "google_project_service" "compute_api" {
 # Create a GKE cluster
 resource "google_container_cluster" "primary" {
   name     = "hello-app-cluster"
-  location = var.REGION
+  location = var.region
 
   # Configure the node pool
   node_pool {

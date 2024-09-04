@@ -8,77 +8,35 @@ terraform {
   }
 }
 
-# Configure Google Cloud project and region
-provider "google" {
-  project = var.project_id
-  region  = var.region
+# Enable the required Google Cloud APIs
+resource "google_project_service" "gke_api" {
+  service            = "container.googleapis.com"
+  disable_on_destroy = false
+}
+
+resource "google_project_service" "compute_api" {
+  service            = "compute.googleapis.com"
+  disable_on_destroy = false
 }
 
 # Create a GKE cluster
 resource "google_container_cluster" "primary" {
-  name     = "cp-cluster"
+  name     = "hello-app-cluster"
   location = var.region
 
-  # Configure node pools
+  # Configure the node pool
   node_pool {
     name               = "default-pool"
     initial_node_count = 1
-    # Configure machine type, disk size, etc.
-  }
-}
-
-# Create a Kubernetes Deployment
-resource "kubernetes_deployment" "app_deployment" {
-  metadata {
-    name = "my-hello-app"
-  }
-
-  spec {
-    replicas = 1
-    selector {
-      match_labels = {
-        app = "my-hello-app"
-      }
-    }
-    template {
-      metadata {
-        labels = {
-          app = "my-hello-app"
-        }
-      }
-      spec {
-        containers {
-          name  = "my-hello-app-container"
-          image = "us-docker.pkg.dev/cloudrun/container/hello"
-
-          # Expose container port
-          port {
-            container_port = 8080
-          }
-        }
-      }
+    node_config {
+      machine_type = "n1-standard-1"
+      oauth_scopes = [
+        "https://www.googleapis.com/auth/compute",
+        "https://www.googleapis.com/auth/devstorage.read_only",
+        "https://www.googleapis.com/auth/logging.write",
+        "https://www.googleapis.com/auth/monitoring",
+      ]
     }
   }
-}
 
-# Create a Kubernetes Service
-resource "kubernetes_service" "app_service" {
-  metadata {
-    name = "my-hello-app-service"
-  }
-  spec {
-    selector = {
-      app = "my-hello-app"
-    }
-    port {
-      port       = 80
-      target_port = 8080
-    }
-    type = "LoadBalancer"
-  }
-}
-
-# Output the public IP address of the load balancer
-output "load_balancer_ip" {
-  value = google_container_cluster.primary.endpoint
 }

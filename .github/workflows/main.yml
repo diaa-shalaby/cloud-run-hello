@@ -50,6 +50,7 @@ jobs:
           region: ${{ env.REGION }}
 
       - name: Terraform Apply
+        working-directory: ./terraform
         run: terraform apply -auto-approve
         env:
           project_id: ${{ env.PROJECT_ID }}

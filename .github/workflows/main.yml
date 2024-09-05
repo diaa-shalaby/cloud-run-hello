@@ -9,26 +9,31 @@ env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   REGION: us-central1
   CLUSTER_NAME: hello-app-cluster
+  WORKLOAD_IDENTITY_PROVIDER: projects/409164299281/locations/global/workloadIdentityPools/github/providers/cloud-run-hello-repo
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+
+      # Configure Workload Identity Federation and generate an access token.
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          workload_identity_provider: '${{ env.WORKLOAD_IDENTITY_PROVIDER }}'
 
       - name: Setup Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v1
         with:
           project_id: ${{ env.PROJECT_ID }}
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
-          export_default_credentials: true
-
-#      - name: Authenticate to GCP
-#        run: gcloud auth activate-service-account --key-file=${{ secrets.GCP_SA_KEY }}
-#
-#      - name: Set Google Project
-#        run: gcloud config set project ${{ env.PROJECT_ID }}
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v1

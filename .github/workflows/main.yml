@@ -21,14 +21,14 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ env.PROJECT_ID }}
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
-          export_default_credentials: true
+#          service_account_key: ${{ secrets.GCP_SA_KEY }}
+#          export_default_credentials: true
 
       - name: Terraform Init
         run: terraform init
 
-      - name: Terraform Plan
-        run: terraform plan -var="project_id=${{ env.PROJECT_ID }}"
+#      - name: Terraform Plan
+#        run: terraform plan -var="project_id=${{ env.PROJECT_ID }}"
 
       - name: Terraform Apply
         run: terraform apply -auto-approve -var="project_id=${{ env.PROJECT_ID }}"
